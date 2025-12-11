@@ -1,0 +1,12 @@
+{
+  "background_color": "#ffffff",
+  "description": "MindNest - Aplikasi kesehatan mental dengan mood tracking, journaling, dan AI companion",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "MindNest",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "MindNest",
+  "start_url": "/",
+  "theme_color": "#B7C9E2"
+}
