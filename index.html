@@ -1,0 +1,2080 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindNest - Your Mental Health Companion</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#B7C9E2">
+    <meta name="description" content="MindNest - Aplikasi kesehatan mental dengan mood tracking, journaling, dan AI companion">
+    <link rel="manifest" href="#" id="manifest-placeholder">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MindNest">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #B7C9E2;
+            --secondary-color: #8AA5C5;
+            --accent-color: #5B7FA8;
+            --bg-color: #FFFFFF;
+            --text-color: #333333;
+            --light-gray: #F5F7FA;
+            --border-color: #E1E8ED;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Loading Animation */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #B7C9E2 0%, #8AA5C5 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-logo {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Hide all screens by default */
+        .screen {
+            display: none;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Splash Screen */
+        #splashScreen {
+            background: linear-gradient(135deg, #B7C9E2 0%, #8AA5C5 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .splash-logo {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease;
+        }
+
+        .splash-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        .splash-tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Auth Screens */
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-logo i {
+            font-size: 4rem;
+            color: var(--primary-color);
+        }
+
+        .auth-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            padding: 12px 15px;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(183, 201, 226, 0.25);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(91, 127, 168, 0.3);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            color: #999;
+            text-decoration: none;
+            padding: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item i {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .nav-item span {
+            font-size: 0.75rem;
+            display: block;
+        }
+
+        .nav-item.active {
+            color: var(--accent-color);
+        }
+
+        /* Home Dashboard */
+        .home-header {
+            background: linear-gradient(135deg, #B7C9E2 0%, #8AA5C5 100%);
+            color: white;
+            padding: 2rem 1.5rem;
+            border-radius: 0 0 30px 30px;
+        }
+
+        .profile-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-info p {
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .profile-icon {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .action-card i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .action-card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .action-card p {
+            font-size: 0.8rem;
+            color: #666;
+            margin: 0;
+        }
+
+        /* Mood Tracking */
+        .mood-container {
+            padding: 1.5rem;
+        }
+
+        .mood-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .mood-option {
+            background: white;
+            border: 3px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mood-option:hover {
+            transform: scale(1.05);
+        }
+
+        .mood-option.selected {
+            border-color: var(--accent-color);
+            background: var(--light-gray);
+        }
+
+        .mood-option i {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .mood-history {
+            margin-top: 2rem;
+        }
+
+        .mood-entry {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Journal */
+        .journal-container {
+            padding: 1.5rem;
+        }
+
+        .journal-editor {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .journal-list {
+            margin-top: 2rem;
+        }
+
+        .journal-item {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+
+        /* Insights */
+        .insights-container {
+            padding: 1.5rem;
+        }
+
+        .insight-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .chart-container {
+            margin: 2rem 0;
+        }
+
+        /* Store */
+        .store-container {
+            padding: 1.5rem;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            background: var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--primary-color);
+        }
+
+        .product-info {
+            padding: 1rem;
+        }
+
+        .product-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-price {
+            color: var(--accent-color);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* Cart */
+        .cart-item {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* AI Chat */
+        .chat-container {
+            padding: 1.5rem;
+            padding-bottom: 100px;
+        }
+
+        .chat-messages {
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .chat-message {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-bubble {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            max-width: 80%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .chat-message.user .message-bubble {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .chat-input-container {
+            position: fixed;
+            bottom: 80px;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Settings */
+        .settings-container {
+            padding: 1.5rem;
+        }
+
+        .settings-group {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .settings-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .mood-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Modal */
+        .modal-content {
+            border-radius: 15px;
+        }
+
+        /* Breathing Exercise */
+        .breathing-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #B7C9E2 0%, #8AA5C5 100%);
+            margin: 2rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            transition: transform 4s ease-in-out;
+        }
+
+        .breathing-circle.inhale {
+            transform: scale(1.5);
+        }
+
+        .breathing-circle.exhale {
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">🧠</div>
+        <div class="loading-text">MindNest</div>
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Splash Screen -->
+    <div class="screen active" id="splashScreen">
+        <div class="splash-logo">🧠</div>
+        <h1 class="splash-title">MindNest</h1>
+        <p class="splash-tagline">Your Mental Health Companion</p>
+    </div>
+
+    <!-- Login Screen -->
+    <div class="screen" id="loginScreen">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h2 class="auth-title">Welcome Back</h2>
+            <p class="auth-subtitle">Login to continue your journey</p>
+            
+            <form id="loginForm">
+                <div class="mb-3">
+                    <input type="email" class="form-control" id="loginEmail" placeholder="Email" required>
+                </div>
+                <div class="mb-3">
+                    <input type="password" class="form-control" id="loginPassword" placeholder="Password" required>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                    <label class="form-check-label" for="rememberMe">Remember Me</label>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
+                <button type="button" class="btn btn-link w-100" onclick="showScreen('forgotPasswordScreen')">Forgot Password?</button>
+            </form>
+            
+            <div class="text-center mt-3">
+                <p>Don't have an account? <a href="#" onclick="showScreen('registerScreen')">Sign Up</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Screen -->
+    <div class="screen" id="registerScreen">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h2 class="auth-title">Create Account</h2>
+            <p class="auth-subtitle">Start your mental health journey</p>
+            
+            <form id="registerForm">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="registerName" placeholder="Full Name" required>
+                </div>
+                <div class="mb-3">
+                    <input type="email" class="form-control" id="registerEmail" placeholder="Email" required>
+                </div>
+                <div class="mb-3">
+                    <input type="password" class="form-control" id="registerPassword" placeholder="Password (min. 6 characters)" required minlength="6">
+                </div>
+                <div class="mb-3">
+                    <input type="password" class="form-control" id="registerConfirmPassword" placeholder="Confirm Password" required>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                    <label class="form-check-label" for="agreeTerms">I agree to Terms & Conditions</label>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-3">Create Account</button>
+            </form>
+            
+            <div class="text-center mt-3">
+                <p>Already have an account? <a href="#" onclick="showScreen('loginScreen')">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Screen -->
+    <div class="screen" id="forgotPasswordScreen">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <i class="fas fa-key"></i>
+            </div>
+            <h2 class="auth-title">Reset Password</h2>
+            <p class="auth-subtitle">Enter your email to reset password</p>
+            
+            <form id="forgotPasswordForm">
+                <div class="mb-3">
+                    <input type="email" class="form-control" id="forgotEmail" placeholder="Email" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-3">Send Reset Link</button>
+                <button type="button" class="btn btn-outline-primary w-100" onclick="showScreen('loginScreen')">Back to Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Home Dashboard -->
+    <div class="screen" id="homeScreen">
+        <div class="home-header">
+            <div class="profile-section">
+                <div class="profile-info">
+                    <h2 id="userName">Hello, User!</h2>
+                    <p id="greetingTime">Good Morning</p>
+                </div>
+                <div class="profile-icon" onclick="showScreen('settingsScreen')">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+            <div class="text-center">
+                <h3>How are you feeling today?</h3>
+            </div>
+        </div>
+        
+        <div class="quick-actions">
+            <div class="action-card" onclick="showScreen('moodScreen')">
+                <i class="fas fa-smile"></i>
+                <h3>Track Mood</h3>
+                <p>Log your emotions</p>
+            </div>
+            <div class="action-card" onclick="showScreen('journalScreen')">
+                <i class="fas fa-book"></i>
+                <h3>Journal</h3>
+                <p>Write your thoughts</p>
+            </div>
+            <div class="action-card" onclick="showMeditation()">
+                <i class="fas fa-spa"></i>
+                <h3>Meditate</h3>
+                <p>Find peace</p>
+            </div>
+            <div class="action-card" onclick="showAIChat()">
+                <i class="fas fa-robot"></i>
+                <h3>AI Companion</h3>
+                <p>Talk to AI</p>
+            </div>
+        </div>
+        
+        <div style="padding: 1.5rem;">
+            <h4>Your Progress Today</h4>
+            <div class="insight-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Mood Entries</span>
+                    <strong id="todayMoodCount">0</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Journal Entries</span>
+                    <strong id="todayJournalCount">0</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Days Streak</span>
+                    <strong id="streakCount">1</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mood Screen -->
+    <div class="screen" id="moodScreen">
+        <div class="home-header">
+            <h2>Track Your Mood</h2>
+            <p>How are you feeling right now?</p>
+        </div>
+        
+        <div class="mood-container">
+            <div class="mood-selector" id="moodSelector">
+                <div class="mood-option" data-mood="happy" onclick="selectMood('happy', '😊', 'Happy')">
+                    <i>😊</i>
+                    <p>Happy</p>
+                </div>
+                <div class="mood-option" data-mood="calm" onclick="selectMood('calm', '😌', 'Calm')">
+                    <i>😌</i>
+                    <p>Calm</p>
+                </div>
+                <div class="mood-option" data-mood="excited" onclick="selectMood('excited', '🤩', 'Excited')">
+                    <i>🤩</i>
+                    <p>Excited</p>
+                </div>
+                <div class="mood-option" data-mood="sad" onclick="selectMood('sad', '😢', 'Sad')">
+                    <i>😢</i>
+                    <p>Sad</p>
+                </div>
+                <div class="mood-option" data-mood="anxious" onclick="selectMood('anxious', '😰', 'Anxious')">
+                    <i>😰</i>
+                    <p>Anxious</p>
+                </div>
+                <div class="mood-option" data-mood="tired" onclick="selectMood('tired', '😴', 'Tired')">
+                    <i>😴</i>
+                    <p>Tired</p>
+                </div>
+            </div>
+            
+            <div id="moodDetailsForm" style="display: none;">
+                <h5>Intensity Level</h5>
+                <input type="range" class="form-range mb-3" min="1" max="10" value="5" id="moodIntensity">
+                <p class="text-center">Level: <span id="intensityValue">5</span>/10</p>
+                
+                <h5>Add Note (Optional)</h5>
+                <textarea class="form-control mb-3" id="moodNote" rows="3" placeholder="What caused this mood?"></textarea>
+                
+                <button class="btn btn-primary w-100" onclick="saveMood()">Save Mood</button>
+            </div>
+            
+            <div class="mood-history mt-4">
+                <h5>Recent Moods</h5>
+                <div id="moodHistoryList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Journal Screen -->
+    <div class="screen" id="journalScreen">
+        <div class="home-header">
+            <h2>Your Journal</h2>
+            <p>Express your thoughts freely</p>
+        </div>
+        
+        <div class="journal-container">
+            <div class="journal-editor">
+                <h5>New Entry</h5>
+                <select class="form-select mb-3" id="journalPrompt">
+                    <option value="">Choose a prompt (optional)</option>
+                    <option value="What are you grateful for today?">What are you grateful for today?</option>
+                    <option value="What's on your mind?">What's on your mind?</option>
+                    <option value="What made you smile today?">What made you smile today?</option>
+                    <option value="What's worrying you?">What's worrying you?</option>
+                    <option value="What did you learn today?">What did you learn today?</option>
+                </select>
+                <textarea class="form-control mb-3" id="journalContent" rows="8" placeholder="Start writing..."></textarea>
+                <button class="btn btn-primary w-100" onclick="saveJournal()">Save Entry</button>
+            </div>
+            
+            <div class="journal-list">
+                <h5>Past Entries</h5>
+                <div id="journalHistoryList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insights Screen -->
+    <div class="screen" id="insightsScreen">
+        <div class="home-header">
+            <h2>Your Insights</h2>
+            <p>Understanding your patterns</p>
+        </div>
+        
+        <div class="insights-container">
+            <div class="insight-card">
+                <h5>Mood Summary</h5>
+                <canvas id="moodChart" style="max-height: 250px;"></canvas>
+            </div>
+            
+            <div class="insight-card">
+                <h5>Activity Statistics</h5>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between">
+                        <span>Total Mood Entries</span>
+                        <strong id="totalMoods">0</strong>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between">
+                        <span>Total Journal Entries</span>
+                        <strong id="totalJournals">0</strong>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex justify-content-between">
+                        <span>Most Common Mood</span>
+                        <strong id="commonMood">-</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="insight-card">
+                <h5>Weekly Mood Trend</h5>
+                <p id="moodTrendText" class="text-muted">Track your mood regularly to see trends</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Store Screen -->
+    <div class="screen" id="storeScreen">
+        <div class="home-header">
+            <h2>Smart Lamp Store</h2>
+            <p>Enhance your mental wellness</p>
+        </div>
+        
+        <div class="store-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5>Products</h5>
+                <button class="btn btn-outline-primary" onclick="showCart()">
+                    <i class="fas fa-shopping-cart"></i> 
+                    Cart (<span id="cartCount">0</span>)
+                </button>
+            </div>
+            
+            <div class="product-grid" id="productGrid"></div>
+        </div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div class="screen" id="settingsScreen">
+        <div class="home-header">
+            <h2>Profile & Settings</h2>
+            <p>Manage your account</p>
+        </div>
+        
+        <div class="settings-container">
+            <div class="settings-group">
+                <div class="text-center mb-3">
+                    <div class="profile-icon mx-auto mb-2" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h4 id="profileName">User Name</h4>
+                    <p id="profileEmail" class="text-muted">user@email.com</p>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <div class="settings-item" onclick="showEditProfile()">
+                    <span><i class="fas fa-edit me-2"></i> Edit Profile</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="settings-item" onclick="showChangePassword()">
+                    <span><i class="fas fa-lock me-2"></i> Change Password</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <div class="settings-item">
+                    <span><i class="fas fa-moon me-2"></i> Dark Mode</span>
+                    <label class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                    </label>
+                </div>
+                <div class="settings-item">
+                    <span><i class="fas fa-bell me-2"></i> Notifications</span>
+                    <label class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="notificationToggle" checked>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <div class="settings-item" onclick="showAbout()">
+                    <span><i class="fas fa-info-circle me-2"></i> About MindNest</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="settings-item" onclick="showHelp()">
+                    <span><i class="fas fa-question-circle me-2"></i> Help & Support</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            
+            <button class="btn btn-danger w-100 mt-3" onclick="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav" id="bottomNav" style="display: none;">
+        <a href="#" class="nav-item active" onclick="showScreen('homeScreen')" data-screen="homeScreen">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="#" class="nav-item" onclick="showScreen('moodScreen')" data-screen="moodScreen">
+            <i class="fas fa-smile"></i>
+            <span>Mood</span>
+        </a>
+        <a href="#" class="nav-item" onclick="showScreen('journalScreen')" data-screen="journalScreen">
+            <i class="fas fa-book"></i>
+            <span>Journal</span>
+        </a>
+        <a href="#" class="nav-item" onclick="showScreen('insightsScreen')" data-screen="insightsScreen">
+            <i class="fas fa-chart-line"></i>
+            <span>Insights</span>
+        </a>
+        <a href="#" class="nav-item" onclick="showScreen('storeScreen')" data-screen="storeScreen">
+            <i class="fas fa-store"></i>
+            <span>Store</span>
+        </a>
+    </div>
+
+    <!-- Modals -->
+    <!-- AI Chat Modal -->
+    <div class="modal fade" id="aiChatModal" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header" style="background: var(--primary-color); color: white;">
+                    <h5 class="modal-title"><i class="fas fa-robot me-2"></i> AI Companion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="chat-messages" id="chatMessages"></div>
+                </div>
+                <div class="chat-input-container">
+                    <div class="chat-input">
+                        <input type="text" class="form-control" id="chatInput" placeholder="Type your message...">
+                        <button class="btn btn-primary" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meditation Modal -->
+    <div class="modal fade" id="meditationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-spa me-2"></i> Breathing Exercise</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="breathing-circle" id="breathingCircle">Breathe</div>
+                    <h4 id="breathingText">Inhale</h4>
+                    <p class="text-muted">Follow the circle</p>
+                    <button class="btn btn-primary" id="breathingBtn" onclick="startBreathing()">Start</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="modal fade" id="cartModal" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-shopping-cart me-2"></i> Shopping Cart</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="cartItems"></div>
+                    <div class="mt-3">
+                        <h5>Total: Rp <span id="cartTotal">0</span></h5>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Shopping</button>
+                    <button type="button" class="btn btn-primary" onclick="showCheckout()">Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Checkout</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Shipping Address</h6>
+                    <textarea class="form-control mb-3" id="shippingAddress" rows="3" placeholder="Enter your address"></textarea>
+                    
+                    <h6>Payment Method</h6>
+                    <select class="form-select mb-3" id="paymentMethod">
+                        <option value="">Select payment method</option>
+                        <option value="ovo">OVO</option>
+                        <option value="gopay">GoPay</option>
+                        <option value="dana">DANA</option>
+                        <option value="shopee">ShopeePay</option>
+                        <option value="bca">Bank Transfer - BCA</option>
+                        <option value="mandiri">Bank Transfer - Mandiri</option>
+                        <option value="bni">Bank Transfer - BNI</option>
+                        <option value="bri">Bank Transfer - BRI</option>
+                        <option value="cod">Cash on Delivery (COD)</option>
+                    </select>
+                    
+                    <div class="alert alert-info">
+                        <strong>Total: Rp <span id="checkoutTotal">0</span></strong>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="completeOrder()">Place Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalTitle">Product Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <div style="font-size: 5rem;" id="productModalIcon"></div>
+                    </div>
+                    <p id="productModalDescription"></p>
+                    <h6>Specifications:</h6>
+                    <ul id="productModalSpecs"></ul>
+                    <h5 class="text-primary">Rp <span id="productModalPrice"></span></h5>
+                    <div class="input-group mb-3">
+                        <button class="btn btn-outline-secondary" onclick="changeQuantity(-1)">-</button>
+                        <input type="number" class="form-control text-center" id="productQuantity" value="1" min="1">
+                        <button class="btn btn-outline-secondary" onclick="changeQuantity(1)">+</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="addToCartFromModal()">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editProfileForm">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" id="editName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="newPassword" required minlength="6">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirmNewPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Change Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+    <script>
+        // Global Variables
+        let currentUser = null;
+        let selectedMood = null;
+        let breathingInterval = null;
+        let currentProduct = null;
+        let moodChart = null;
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                checkAuth();
+            }, 2000);
+
+            // Splash screen
+            setTimeout(() => {
+                if (!currentUser) {
+                    showScreen('loginScreen');
+                }
+            }, 3000);
+
+            // Setup event listeners
+            setupEventListeners();
+            initProducts();
+        });
+
+        function setupEventListeners() {
+            // Login Form
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Register Form
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            
+            // Forgot Password Form
+            document.getElementById('forgotPasswordForm').addEventListener('submit', handleForgotPassword);
+            
+            // Edit Profile Form
+            document.getElementById('editProfileForm').addEventListener('submit', handleEditProfile);
+            
+            // Change Password Form
+            document.getElementById('changePasswordForm').addEventListener('submit', handleChangePassword);
+            
+            // Mood Intensity Slider
+            document.getElementById('moodIntensity').addEventListener('input', function() {
+                document.getElementById('intensityValue').textContent = this.value;
+            });
+            
+            // Journal Prompt
+            document.getElementById('journalPrompt').addEventListener('change', function() {
+                if (this.value) {
+                    document.getElementById('journalContent').value = this.value + '\n\n';
+                }
+            });
+            
+            // Chat Input Enter Key
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+
+        // Authentication Functions
+        function checkAuth() {
+            const rememberMe = localStorage.getItem('rememberMe');
+            const savedUser = localStorage.getItem('currentUser');
+            
+            if (rememberMe === 'true' && savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showScreen('homeScreen');
+                loadUserData();
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.email === email && u.password === btoa(password));
+            
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                localStorage.setItem('rememberMe', rememberMe);
+                
+                showScreen('homeScreen');
+                loadUserData();
+                showAlert('Welcome back!', 'success');
+            } else {
+                showAlert('Invalid email or password', 'danger');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match', 'danger');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters', 'danger');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            if (users.find(u => u.email === email)) {
+                showAlert('Email already registered', 'danger');
+                return;
+            }
+            
+            const newUser = {
+                id: Date.now(),
+                name,
+                email,
+                password: btoa(password),
+                createdAt: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            showAlert('Account created successfully! Please login.', 'success');
+            showScreen('loginScreen');
+        }
+
+        function handleForgotPassword(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgotEmail').value;
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (users.find(u => u.email === email)) {
+                showAlert('Password reset link sent to your email (Demo: Check console)', 'success');
+                console.log('Reset password for:', email);
+                setTimeout(() => showScreen('loginScreen'), 2000);
+            } else {
+                showAlert('Email not found', 'danger');
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('rememberMe');
+                showScreen('loginScreen');
+                showAlert('Logged out successfully', 'success');
+            }
+        }
+
+        // Screen Navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            // Update bottom nav
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.screen === screenId) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Show/hide bottom nav
+            const noNavScreens = ['loginScreen', 'registerScreen', 'forgotPasswordScreen', 'splashScreen'];
+            document.getElementById('bottomNav').style.display = noNavScreens.includes(screenId) ? 'none' : 'flex';
+            
+            // Load screen data
+            if (screenId === 'homeScreen') loadHomeData();
+            if (screenId === 'moodScreen') loadMoodHistory();
+            if (screenId === 'journalScreen') loadJournalHistory();
+            if (screenId === 'insightsScreen') loadInsights();
+            if (screenId === 'settingsScreen') loadSettings();
+        }
+
+        // Load User Data
+        function loadUserData() {
+            if (!currentUser) return;
+            
+            document.getElementById('userName').textContent = `Hello, ${currentUser.name}!`;
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileEmail').textContent = currentUser.email;
+            
+            // Set greeting based on time
+            const hour = new Date().getHours();
+            let greeting = 'Good Morning';
+            if (hour >= 12 && hour < 17) greeting = 'Good Afternoon';
+            else if (hour >= 17) greeting = 'Good Evening';
+            document.getElementById('greetingTime').textContent = greeting;
+            
+            document.getElementById('bottomNav').style.display = 'flex';
+        }
+
+        function loadHomeData() {
+            const moods = JSON.parse(localStorage.getItem(`moods_${currentUser.id}`) || '[]');
+            const journals = JSON.parse(localStorage.getItem(`journals_${currentUser.id}`) || '[]');
+            
+            const today = new Date().toDateString();
+            const todayMoods = moods.filter(m => new Date(m.timestamp).toDateString() === today);
+            const todayJournals = journals.filter(j => new Date(j.timestamp).toDateString() === today);
+            
+            document.getElementById('todayMoodCount').textContent = todayMoods.length;
+            document.getElementById('todayJournalCount').textContent = todayJournals.length;
+        }
+
+        // Mood Tracking
+        function selectMood(mood, emoji, label) {
+            selectedMood = { mood, emoji, label };
+            
+            document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelector(`[data-mood="${mood}"]`).classList.add('selected');
+            
+            document.getElementById('moodDetailsForm').style.display = 'block';
+        }
+
+        function saveMood() {
+            if (!selectedMood) {
+                showAlert('Please select a mood first', 'warning');
+                return;
+            }
+            
+            const intensity = document.getElementById('moodIntensity').value;
+            const note = document.getElementById('moodNote').value;
+            
+            const moodEntry = {
+                id: Date.now(),
+                ...selectedMood,
+                intensity: parseInt(intensity),
+                note,
+                timestamp: new Date().toISOString()
+            };
+            
+            const moods = JSON.parse(localStorage.getItem(`moods_${currentUser.id}`) || '[]');
+            moods.unshift(moodEntry);
+            localStorage.setItem(`moods_${currentUser.id}`, JSON.stringify(moods));
+            
+            showAlert(`Mood "${selectedMood.label}" saved!`, 'success');
+            
+            // Reset form
+            selectedMood = null;
+            document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('moodDetailsForm').style.display = 'none';
+            document.getElementById('moodNote').value = '';
+            document.getElementById('moodIntensity').value = 5;
+            document.getElementById('intensityValue').textContent = 5;
+            
+            loadMoodHistory();
+        }
+
+        function loadMoodHistory() {
+            const moods = JSON.parse(localStorage.getItem(`moods_${currentUser.id}`) || '[]');
+            const historyList = document.getElementById('moodHistoryList');
+            
+            if (moods.length === 0) {
+                historyList.innerHTML = '<p class="text-muted">No mood entries yet</p>';
+                return;
+            }
+            
+            historyList.innerHTML = moods.slice(0, 10).map(mood => `
+                <div class="mood-entry">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span style="font-size: 1.5rem;">${mood.emoji}</span>
+                            <strong class="ms-2">${mood.label}</strong>
+                            <span class="ms-2 badge bg-secondary">Intensity: ${mood.intensity}/10</span>
+                        </div>
+                        <small class="text-muted">${formatDate(mood.timestamp)}</small>
+                    </div>
+                    ${mood.note ? `<p class="mt-2 mb-0 text-muted">${mood.note}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Journal
+        function saveJournal() {
+            const content = document.getElementById('journalContent').value.trim();
+            
+            if (!content) {
+                showAlert('Please write something', 'warning');
+                return;
+            }
+            
+            const journalEntry = {
+                id: Date.now(),
+                content,
+                timestamp: new Date().toISOString()
+            };
+            
+            const journals = JSON.parse(localStorage.getItem(`journals_${currentUser.id}`) || '[]');
+            journals.unshift(journalEntry);
+            localStorage.setItem(`journals_${currentUser.id}`, JSON.stringify(journals));
+            
+            showAlert('Journal entry saved!', 'success');
+            document.getElementById('journalContent').value = '';
+            document.getElementById('journalPrompt').value = '';
+            
+            loadJournalHistory();
+        }
+
+        function loadJournalHistory() {
+            const journals = JSON.parse(localStorage.getItem(`journals_${currentUser.id}`) || '[]');
+            const historyList = document.getElementById('journalHistoryList');
+            
+            if (journals.length === 0) {
+                historyList.innerHTML = '<p class="text-muted">No journal entries yet</p>';
+                return;
+            }
+            
+            historyList.innerHTML = journals.map(journal => `
+                <div class="journal-item">
+                    <div class="d-flex justify-content-between mb-2">
+                        <strong>${formatDate(journal.timestamp)}</strong>
+                    </div>
+                    <p class="mb-0">${journal.content.substring(0, 150)}${journal.content.length > 150 ? '...' : ''}</p>
+                </div>
+            `).join('');
+        }
+
+        // Insights
+        function loadInsights() {
+            const moods = JSON.parse(localStorage.getItem(`moods_${currentUser.id}`) || '[]');
+            const journals = JSON.parse(localStorage.getItem(`journals_${currentUser.id}`) || '[]');
+            
+            document.getElementById('totalMoods').textContent = moods.length;
+            document.getElementById('totalJournals').textContent = journals.length;
+            
+            if (moods.length > 0) {
+                const moodCounts = {};
+                moods.forEach(m => {
+                    moodCounts[m.label] = (moodCounts[m.label] || 0) + 1;
+                });
+                
+                const mostCommon = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
+                document.getElementById('commonMood').textContent = mostCommon[0];
+                
+                createMoodChart(moodCounts);
+            } else {
+                document.getElementById('commonMood').textContent = '-';
+            }
+        }
+
+        function createMoodChart(moodCounts) {
+            const ctx = document.getElementById('moodChart');
+            
+            if (moodChart) {
+                moodChart.destroy();
+            }
+            
+            moodChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(moodCounts),
+                    datasets: [{
+                        data: Object.values(moodCounts),
+                        backgroundColor: [
+                            '#B7C9E2',
+                            '#8AA5C5',
+                            '#5B7FA8',
+                            '#FFD93D',
+                            '#6BCB77',
+                            '#FF6B6B'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Products
+        function initProducts() {
+            const products = [
+                {
+                    id: 1,
+                    name: 'MindNest Basic',
+                    price: 499000,
+                    icon: '💡',
+                    description: 'Smart lamp dengan fitur dasar untuk terapi cahaya dan relaksasi',
+                    specs: ['RGB Color', '10 Brightness Levels', 'Timer Function', 'App Control']
+                },
+                {
+                    id: 2,
+                    name: 'MindNest Pro',
+                    price: 799000,
+                    icon: '🌟',
+                    description: 'Smart lamp premium dengan fitur lengkap dan AI integration',
+                    specs: ['RGB + White', '20 Brightness Levels', 'Pomodoro Timer', 'AI Integration', 'Audio Breathing Guide']
+                },
+                {
+                    id: 3,
+                    name: 'MindNest Elite',
+                    price: 1299000,
+                    icon: '✨',
+                    description: 'Smart lamp terbaik dengan semua fitur premium dan desain eksklusif',
+                    specs: ['Full Spectrum RGB', 'Infinite Dimming', 'Advanced Timer', 'AI + Voice Control', 'Sleep Mode', 'Premium Design']
+                }
+            ];
+            
+            localStorage.setItem('products', JSON.stringify(products));
+            displayProducts();
+        }
+
+        function displayProducts() {
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            const grid = document.getElementById('productGrid');
+            
+            grid.innerHTML = products.map(product => `
+                <div class="product-card" onclick='showProductDetail(${JSON.stringify(product)})'>
+                    <div class="product-image">${product.icon}</div>
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">Rp ${formatPrice(product.price)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showProductDetail(product) {
+            currentProduct = product;
+            
+            document.getElementById('productModalTitle').textContent = product.name;
+            document.getElementById('productModalIcon').textContent = product.icon;
+            document.getElementById('productModalDescription').textContent = product.description;
+            document.getElementById('productModalPrice').textContent = formatPrice(product.price);
+            document.getElementById('productQuantity').value = 1;
+            
+            const specsList = document.getElementById('productModalSpecs');
+            specsList.innerHTML = product.specs.map(spec => `<li>${spec}</li>`).join('');
+            
+            new bootstrap.Modal(document.getElementById('productModal')).show();
+        }
+
+        function changeQuantity(delta) {
+            const input = document.getElementById('productQuantity');
+            const newValue = parseInt(input.value) + delta;
+            if (newValue >= 1) {
+                input.value = newValue;
+            }
+        }
+
+        function addToCartFromModal() {
+            if (!currentProduct) return;
+            
+            const quantity = parseInt(document.getElementById('productQuantity').value);
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`) || '[]');
+            
+            const existingItem = cart.find(item => item.id === currentProduct.id);
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({
+                    ...currentProduct,
+                    quantity
+                });
+            }
+            
+            localStorage.setItem(`cart_${currentUser.id}`, JSON.stringify(cart));
+            updateCartCount();
+            
+            showAlert('Product added to cart!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`) || '[]');
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = totalItems;
+        }
+
+        function showCart() {
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`) || '[]');
+            const cartItems = document.getElementById('cartItems');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p class="text-muted text-center">Your cart is empty</p>';
+                document.getElementById('cartTotal').textContent = '0';
+            } else {
+                cartItems.innerHTML = cart.map((item, index) => `
+                    <div class="cart-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="font-size: 2rem;">${item.icon}</div>
+                                <div>
+                                    <strong>${item.name}</strong>
+                                    <br>
+                                    <small>Rp ${formatPrice(item.price)} x ${item.quantity}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <strong>Rp ${formatPrice(item.price * item.quantity)}</strong>
+                                <button class="btn btn-sm btn-danger" onclick="removeFromCart(${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                document.getElementById('cartTotal').textContent = formatPrice(total);
+            }
+            
+            new bootstrap.Modal(document.getElementById('cartModal')).show();
+        }
+
+        function removeFromCart(index) {
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`) || '[]');
+            cart.splice(index, 1);
+            localStorage.setItem(`cart_${currentUser.id}`, JSON.stringify(cart));
+            updateCartCount();
+            showCart();
+        }
+
+        function showCheckout() {
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`) || '[]');
+            
+            if (cart.length === 0) {
+                showAlert('Your cart is empty', 'warning');
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            document.getElementById('checkoutTotal').textContent = formatPrice(total);
+            
+            bootstrap.Modal.getInstance(document.getElementById('cartModal')).hide();
+            new bootstrap.Modal(document.getElementById('checkoutModal')).show();
+        }
+
+        function completeOrder() {
+            const address = document.getElementById('shippingAddress').value;
+            const payment = document.getElementById('paymentMethod').value;
+            
+            if (!address || !payment) {
+                showAlert('Please fill in all fields', 'warning');
+                return;
+            }
+            
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`) || '[]');
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            const order = {
+                id: Date.now(),
+                items: cart,
+                total,
+                address,
+                payment,
+                status: 'Processing',
+                timestamp: new Date().toISOString()
+            };
+            
+            const orders = JSON.parse(localStorage.getItem(`orders_${currentUser.id}`) || '[]');
+            orders.unshift(order);
+            localStorage.setItem(`orders_${currentUser.id}`, JSON.stringify(orders));
+            
+            // Clear cart
+            localStorage.setItem(`cart_${currentUser.id}`, '[]');
+            updateCartCount();
+            
+            bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+            showAlert('Order placed successfully! Thank you for your purchase.', 'success');
+            
+            // Reset form
+            document.getElementById('shippingAddress').value = '';
+            document.getElementById('paymentMethod').value = '';
+        }
+
+        // AI Chat
+        function showAIChat() {
+            const modal = new bootstrap.Modal(document.getElementById('aiChatModal'));
+            modal.show();
+            
+            const messages = document.getElementById('chatMessages');
+            if (messages.children.length === 0) {
+                addAIMessage("Hello! I'm your AI companion. How are you feeling today? Feel free to share anything on your mind.");
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addUserMessage(message);
+            input.value = '';
+            
+            // Simulate AI response
+            setTimeout(() => {
+                const response = generateAIResponse(message);
+                addAIMessage(response);
+            }, 1000);
+        }
+
+        function addUserMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message user';
+            messageDiv.innerHTML = `
+                <div class="message-bubble">${message}</div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addAIMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message';
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <i class="fas fa-robot text-primary me-2"></i>
+                    ${message}
+                </div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function generateAIResponse(userMessage) {
+            const lowerMessage = userMessage.toLowerCase();
+            
+            if (lowerMessage.includes('stress') || lowerMessage.includes('anxious') || lowerMessage.includes('worried')) {
+                return "I understand you're feeling stressed. Have you tried our breathing exercise? It can help calm your mind. Would you like me to guide you through it?";
+            } else if (lowerMessage.includes('sad') || lowerMessage.includes('down') || lowerMessage.includes('depressed')) {
+                return "I'm sorry you're feeling this way. Remember, it's okay to have difficult days. Have you considered journaling about your feelings? Sometimes writing helps process emotions.";
+            } else if (lowerMessage.includes('happy') || lowerMessage.includes('good') || lowerMessage.includes('great')) {
+                return "That's wonderful to hear! I'm glad you're feeling positive. What made today special for you?";
+            } else if (lowerMessage.includes('sleep') || lowerMessage.includes('tired')) {
+                return "Quality sleep is so important for mental health. Have you tried our smart lamp's sleep mode? It can help you wind down with gradually dimming light.";
+            } else if (lowerMessage.includes('help') || lowerMessage.includes('advice')) {
+                return "I'm here to support you. I can help you with mood tracking, journaling prompts, or breathing exercises. What would be most helpful for you right now?";
+            } else {
+                return "Thank you for sharing that with me. How does talking about this make you feel? Remember, I'm here to listen and support you.";
+            }
+        }
+
+        // Meditation/Breathing
+        function showMeditation() {
+            new bootstrap.Modal(document.getElementById('meditationModal')).show();
+        }
+
+        function startBreathing() {
+            const circle = document.getElementById('breathingCircle');
+            const text = document.getElementById('breathingText');
+            const btn = document.getElementById('breathingBtn');
+            
+            if (breathingInterval) {
+                clearInterval(breathingInterval);
+                breathingInterval = null;
+                btn.textContent = 'Start';
+                circle.classList.remove('inhale', 'exhale');
+                text.textContent = 'Breathe';
+                return;
+            }
+            
+            btn.textContent = 'Stop';
+            let phase = 0;
+            const phases = ['Inhale', 'Hold', 'Exhale', 'Hold'];
+            const durations = [4000, 2000, 4000, 2000];
+            
+            function nextPhase() {
+                text.textContent = phases[phase];
+                
+                if (phases[phase] === 'Inhale') {
+                    circle.classList.remove('exhale');
+                    circle.classList.add('inhale');
+                } else if (phases[phase] === 'Exhale') {
+                    circle.classList.remove('inhale');
+                    circle.classList.add('exhale');
+                }
+                
+                phase = (phase + 1) % 4;
+            }
+            
+            nextPhase();
+            breathingInterval = setInterval(nextPhase, durations[phase]);
+        }
+
+        // Settings
+        function loadSettings() {
+            document.getElementById('editName').value = currentUser.name;
+            document.getElementById('editEmail').value = currentUser.email;
+        }
+
+        function showEditProfile() {
+            new bootstrap.Modal(document.getElementById('editProfileModal')).show();
+        }
+
+        function handleEditProfile(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('editName').value;
+            const email = document.getElementById('editEmail').value;
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            
+            if (userIndex !== -1) {
+                users[userIndex].name = name;
+                users[userIndex].email = email;
+                currentUser.name = name;
+                currentUser.email = email;
+                
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                loadUserData();
+                bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
+                showAlert('Profile updated successfully!', 'success');
+            }
+        }
+
+        function showChangePassword() {
+            new bootstrap.Modal(document.getElementById('changePasswordModal')).show();
+        }
+
+        function handleChangePassword(e) {
+            e.preventDefault();
+            
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmNewPassword').value;
+            
+            if (btoa(current) !== currentUser.password) {
+                showAlert('Current password is incorrect', 'danger');
+                return;
+            }
+            
+            if (newPass !== confirm) {
+                showAlert('New passwords do not match', 'danger');
+                return;
+            }
+            
+            if (newPass.length < 6) {
+                showAlert('Password must be at least 6 characters', 'danger');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            
+            if (userIndex !== -1) {
+                users[userIndex].password = btoa(newPass);
+                currentUser.password = btoa(newPass);
+                
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                showAlert('Password changed successfully!', 'success');
+                
+                // Reset form
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmNewPassword').value = '';
+            }
+        }
+
+        function showAbout() {
+            showAlert('MindNest v1.0 - Your Mental Health Companion. Developed with ❤️ for better mental wellness.', 'info');
+        }
+
+        function showHelp() {
+            showAlert('Need help? Contact us at support@mindnest.app or visit our FAQ section.', 'info');
+        }
+
+        // Utility Functions
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)} minutes ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)} hours ago`;
+            
+            return date.toLocaleDateString('id-ID', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('id-ID').format(price);
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+            alertDiv.style.zIndex = '9999';
+            alertDiv.style.minWidth = '300px';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swContent = `
+                    self.addEventListener('install', (e) => {
+                        e.waitUntil(
+                            caches.open('mindnest-v1').then((cache) => {
+                                return cache.addAll([
+                                    '/',
+                                    '/index.html'
+                                ]);
+                            })
+                        );
+                    });
+
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(
+                            caches.match(e.request).then((response) => {
+                                return response || fetch(e.request);
+                            })
+                        );
+                    });
+                `;
+                
+                const blob = new Blob([swContent], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl)
+                    .then(() => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+
+        // PWA Manifest
+        const manifest = {
+            name: 'MindNest - Mental Health Companion',
+            short_name: 'MindNest',
+            description: 'Your personal mental health companion with mood tracking, journaling, and AI support',
+            start_url: '/',
+            display: 'standalone',
+            background_color: '#FFFFFF',
+            theme_color: '#B7C9E2',
+            icons: [
+                {
+                    src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="0.9em" font-size="90">🧠</text></svg>',
+                    sizes: '512x512',
+                    type: 'image/svg+xml'
+                }
+            ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        document.getElementById('manifest-placeholder').setAttribute('href', manifestURL);
+
+        // Initialize cart count on load
+        setTimeout(() => {
+            if (currentUser) {
+                updateCartCount();
+            }
+        }, 100);
+    </script>
+</body>
+</html>
